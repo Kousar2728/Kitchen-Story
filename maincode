@@ -1,0 +1,1802 @@
+
+App.module.ts:
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { ReactiveFormsModule } from '@angular/forms';
+import { HomeComponent } from './home/home.component';
+import { LoginComponent } from './login/login.component';
+import { RegisterComponent } from './register/register.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { AdminhomeComponent } from './adminhome/adminhome.component';
+import { ViewAllUsersComponent } from './view-all-users/view-all-users.component';
+import { AddfooditemComponent } from './addfooditem/addfooditem.component';
+import { ViewallfooditemsComponent } from
+'./viewallfooditems/viewallfooditems.component';
+import { FooditemsComponent } from './fooditems/fooditems.component';
+import { CartComponent } from './cart/cart.component';
+import { PaymentComponent } from './payment/payment.component';
+import { NgxPaginationModule } from 'ngx-pagination';
+import { Ng2SearchPipeModule } from 'ng2-search-filter';
+import { VieworderComponent } from './vieworder/vieworder.component';
+import { FooterComponent } from './footer/footer.component';
+import { ChangepasswordComponent } from './changepassword/changepassword.component';
+@NgModule({
+declarations: [
+AppComponent,
+LoginComponent,
+RegisterComponent,
+HomeComponent,
+DashboardComponent,
+AdminhomeComponent,
+ViewAllUsersComponent,
+AddfooditemComponent,
+ViewallfooditemsComponent,
+FooditemsComponent,
+CartComponent,
+PaymentComponent,
+VieworderComponent,
+FooterComponent,
+ChangepasswordComponent,
+],
+imports: [
+BrowserModule,
+AppRoutingModule,
+NgbModule,
+ReactiveFormsModule,
+FormsModule,
+HttpClientModule,
+NgxPaginationModule,
+// Ng2SearchPipeModule
+],
+providers: [],
+bootstrap: [AppComponent]
+})
+export class AppModule { }
+App.component.ts
+import { Component } from '@angular/core';
+import { AuthService } from './auth.service';
+import { CartService } from './cart.service';
+import { Router } from '@angular/router';
+@Component({
+selector: 'app-root',
+templateUrl: './app.component.html',
+styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+title = 'KitchenStory';
+constructor(
+public authService: AuthService,
+private router: Router,
+private cartService: CartService
+) { }
+cartItemCount: number;
+userName: string;
+ngOnInit() {
+this.cartService.cartItemCount$.subscribe(count => {
+this.cartItemCount = count;
+});
+const userId = this.authService.getCurrentUserId();
+this.cartService.updateCartItemCount(userId);
+this.authService.getUserDetails(userId).subscribe(user => {
+this.userName = user.username;
+console.log(user);
+});
+}
+logout() {
+this.authService.logout();
+this.router.navigate(['/']);
+}
+}
+App.component.html:
+<!-- Top Nav -->
+<div>
+<nav class="navbar navbar-expand-lg text-light navbar-dark" style="
+background-color:crimson;">
+<div class="container-fluid ms-5">
+<div class="left">
+<i class='fas fa-hamburger' style='font-size:30px'></i>
+<a class="navbar-brand left fw-bold" routerLink="/">KitchenStory</a>
+</div>
+<div class="cart-icon cart right">
+<a routerLink="/cart" class="nav-link active"><i class="fa
+fa-shopping-cart">&nbsp;<strong>Cart</strong></i></a>
+<span class="badge badge-pill badge-warning" *ngIf="cartItemCount > 0">{{
+cartItemCount }}</span>
+</div>
+</div>
+</nav>
+</div>
+<!--
+=========================================================================================
+==== -->
+<!-- side nav -->
+<!-- user dashboard -->
+<div class="container-fluid" style="width: 100%;">
+<div class="row">
+<div class=" col-md-2 p-2 overflow-auto fixed-left" *ngIf="authService.getRole() ===
+'user'">
+<div class="col-md-10 sidenav">
+<div class="list-group list-group-flush list-group-no-border list-group-sm fs-6
+ps-3 overflow-auto">
+<div class="card pt-3 text-center rounded-0"
+*ngIf="authService.isAuthenticated()">
+<i class="fa fa-user-circle pb-3" style='font-size:70px;'></i>
+<p> {{ userName }}</p>
+</div>
+<a routerLink="/" class="list-group-item list-group-item-action">Home</a>
+<a routerLink="/dashboard" *ngIf="authService.isAuthenticated()"
+class="list-group-item list-group-item-action">Dashboard</a>
+<a routerLink="/login" class="list-group-item list-group-item-action"
+*ngIf="!authService.isAuthenticated()">Login</a>
+<a routerLink="/register" class="list-group-item list-group-item-action"
+*ngIf="!authService.isAuthenticated()">Register</a>
+<a routerLink="/changepass" class="list-group-item
+list-group-item-action">Change Password</a>
+<a routerLink="/dashboard" class="list-group-item
+list-group-item-action">Orders</a>
+<a routerLink="/menu" class="list-group-item list-group-item-action">All
+Items</a>
+<a routerLink="/dashboard" *ngIf="authService.isAuthenticated()"
+class="list-group-item list-group-item-action">Addresses</a>
+<a routerLink="/menu" class="list-group-item list-group-item-action">Menu</a>
+<a routerLink="/dashboard" class="list-group-item
+list-group-item-action">Setting</a>
+<a *ngIf="authService.isAuthenticated()" (click)="authService.logout()"
+class="list-group-item list-group-item-action">Logout</a>
+</div>
+</div>
+</div>
+<!--
+=========================================================================================
+===== -->
+<!-- Admin Dashboard -->
+<div class=" col-md-2" style="height: 100vh;" *ngIf="authService.getRole() ===
+'admin'">
+<div class="col-md-10 sidenav">
+<div class="list-group list-group-flush list-group-no-border list-group-sm fs-6
+overflow-auto">
+<div class="card pt-3 text-center" *ngIf="authService.isAuthenticated()">
+<i class="fa fa-user-circle pb-3" style='font-size:70px;'></i>
+<p> {{ userName }}</p>
+</div>
+<a routerLink="/" class="list-group-item list-group-item-action">Home</a>
+<a routerLink="/admin" class="list-group-item
+list-group-item-action">Dashboard</a>
+<a routerLink="/viewalluser" class="list-group-item
+list-group-item-action">ViewAllUsers</a>
+<a routerLink="/viewallfooditems" class="list-group-item
+list-group-item-action">ViewAllFoodItems</a>
+<a routerLink="/addfood" class="list-group-item
+list-group-item-action">AddFoodItem</a>
+<a routerLink="/changepass" class="list-group-item
+list-group-item-action">Change Password</a>
+<a *ngIf="authService.isAuthenticated()" (click)="authService.logout()"
+class="list-group-item list-group-item-action">Logout</a>
+</div>
+</div>
+</div>
+<!--
+=========================================================================================
+===== -->
+<div class="outlet col-md-10">
+<div class="col-md-12 mb-2" style="background: rgba(0, 0, 0, 0.7);">
+<router-outlet></router-outlet>
+<br>
+<br>
+<br>
+<br>
+<app-footer></app-footer>
+</div>
+</div>
+</div>
+</div>
+App.component.css:
+.navbar {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 10px 20px;
+background-color: #333;
+}
+nav .left,
+nav .right {
+color: white;
+padding: 5px 10px;
+}
+.cart-icon {
+position: relative;
+display: inline-block;
+padding: 6px 15px;
+/* Some padding around the cart icon */
+cursor: pointer;
+/* Indicate the cart can be interacted with */
+transition: background-color 0.3s;
+/* Smooth transition for hover effects */
+}
+.cart-icon:hover {
+background-color: rgba(4, 12, 151, 0.05);
+/* Slight background on hover for better UX */
+}
+.cart-icon .fa-shopping-cart {
+font-size: 1.4rem;
+/* Increase the size of the cart icon */
+}
+.cart-icon .badge {
+position: absolute;
+top: -8px;
+/* Position the badge slightly above the icon */
+right: -8px;
+font-size: 0.75rem;
+/* Slightly decrease font size for aesthetic purposes */
+background-color: rgb(46, 41, 41);
+/* Use a different color for more contrast */
+}
+.cart-icon:hover .fa-shopping-cart {
+transform: scale(1.2);
+/* Slightly scale the cart icon on hover */
+}
+.sidenav {
+height: 100%;
+width: 200px;
+position: fixed;
+}
+App.routing.module.ts:
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { LoginComponent } from './login/login.component';
+import { RegisterComponent } from './register/register.component';
+import { HomeComponent } from './home/home.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { AdminhomeComponent } from './adminhome/adminhome.component';
+import { ViewAllUsersComponent } from './view-all-users/view-all-users.component';
+import { AuthGuard } from './auth.guard';
+import { AddfooditemComponent } from './addfooditem/addfooditem.component';
+import { ViewallfooditemsComponent } from
+'./viewallfooditems/viewallfooditems.component';
+import { FooditemsComponent } from './fooditems/fooditems.component';
+import { CartComponent } from './cart/cart.component';
+import { PaymentComponent } from './payment/payment.component';
+import { VieworderComponent } from './vieworder/vieworder.component';
+import { ChangepasswordComponent } from './changepassword/changepassword.component';
+const routes: Routes = [
+{ path: '', component: HomeComponent },
+{ path: 'home', component: HomeComponent },
+{ path: 'register', component: RegisterComponent },
+{ path: 'login', component: LoginComponent },
+{ path: 'changepass', component: ChangepasswordComponent },
+{ path: 'admin', component: AdminhomeComponent },
+{ path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
+{ path: 'viewalluser', component: ViewAllUsersComponent, canActivate: [AuthGuard] },
+{ path: 'addfood', component: AddfooditemComponent },
+{ path: 'viewallfooditems', component: ViewallfooditemsComponent },
+{ path: 'menu', component: FooditemsComponent },
+{ path: 'cart', component: CartComponent },
+{ path: 'payment', component: PaymentComponent },
+{ path: 'view/:userId', component: VieworderComponent },
+];
+@NgModule({
+imports: [RouterModule.forRoot(routes)],
+exports: [RouterModule]
+})
+export class AppRoutingModule { }
+AuthGuard.ts
+import { CanActivateFn } from '@angular/router';
+import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from './auth.service';
+export const authGuard: CanActivateFn = (route, state) => {
+return true;
+};
+@Injectable({
+providedIn: 'root'
+})
+export class AuthGuard {
+constructor(private authService: AuthService, private router: Router) { }
+canActivate(): boolean {
+if (this.authService.isAuthenticated()) {
+return true;
+} else {
+this.router.navigate(['/login']);
+return false;
+}
+}
+}
+AuthService.ts
+import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+@Injectable({
+providedIn: 'root'
+})
+export class AuthService {
+public currentUser: Observable<any>;
+private baseURL: string = 'http://localhost:3000';
+constructor(
+private router: Router,
+private http: HttpClient
+) { }
+login(user: any): void {
+localStorage.setItem('currentUser', JSON.stringify(user));
+if (user.email === 'admin@gmail.com' && user.password === 'admin@123') {
+localStorage.setItem('role', 'admin');
+} else {
+localStorage.setItem('role', 'user');
+}
+}
+changePassword(currentPassword: string, newPassword: string) {
+return of({ success: true });
+}
+logout(): void {
+localStorage.removeItem('currentUser');
+localStorage.removeItem('role');
+this.router.navigate(['/']);
+}
+isAuthenticated(): boolean {
+return localStorage.getItem('currentUser') ? true : false;
+}
+// getCurrentUser(): any {
+// return JSON.parse(localStorage.getItem('currentUser') || '{}');
+// }
+getCurrentUserId(): number {
+const currentUser = JSON.parse(localStorage.getItem('currentUser') as string);
+return currentUser ? currentUser.id : null;
+}
+getRole(): string {
+return localStorage.getItem('role') || 'user';
+}
+getUserDetails(userId: number): Observable<any> {
+return this.http.get(`${this.baseURL}/users/${userId}`);
+}
+}
+CartService.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, Subject, forkJoin, of, switchMap } from 'rxjs';
+import { CartItem } from './cart';
+@Injectable({
+providedIn: 'root'
+})
+export class CartService {
+private baseURL: string = 'http://localhost:3000';
+private cartItemCount = new BehaviorSubject<number>(0);
+cartItemCount$ = this.cartItemCount.asObservable();
+constructor(private http: HttpClient) { }
+addToCart(userId: number, foodItem: any) {
+const cartItem: CartItem = {
+userId,
+foodItemId: foodItem.id,
+quantity: 1,
+price: foodItem.price,
+foodItemName: foodItem.name,
+id: 0
+};
+return this.http.post<CartItem>(`${this.baseURL}/cart`, cartItem);
+}
+updateCartItemCount(userId: number) {
+this.getCartItems(userId).subscribe(items => {
+this.cartItemCount.next(items.length);
+});
+}
+updateCartCount(count: number) {
+this.cartItemCount.next(count);
+}
+getCartItems(userId: number) {
+return this.http.get<CartItem[]>(`${this.baseURL}/cart?userId=${userId}`);
+}
+increaseQuantity(cartItemId: number, quantity: number) {
+return this.http.patch<CartItem>(`${this.baseURL}/cart/${cartItemId}`, { quantity:
+quantity + 1 });
+}
+decreaseQuantity(cartItemId: number, quantity: number) {
+if (quantity > 1) {
+return this.http.patch<CartItem>(`${this.baseURL}/cart/${cartItemId}`, { quantity:
+quantity - 1 });
+} else {
+return this.removeCartItem(cartItemId);
+}
+}
+removeCartItem(cartItemId: number) {
+return this.http.delete<CartItem>(`${this.baseURL}/cart/${cartItemId}`);
+}
+clearCart(userId: number) {
+return this.getCartItems(userId).pipe(
+switchMap(items => {
+const removalObservables = items.map(item => this.removeCartItem(item.id));
+return forkJoin(removalObservables);
+})
+);
+}
+placeOrder(userId: number) {
+// First, fetch cart items
+return this.getCartItems(userId).pipe(
+switchMap(cartItems => {
+const order = {
+userId: userId,
+items: cartItems,
+totalAmount: cartItems.reduce((sum, item) => sum + (item.price *
+item.quantity), 0),
+date: new Date().toISOString()
+};
+// Add the order
+return this.http.post(`${this.baseURL}/orders`, order);
+}),
+// switchMap(() => {
+// // Clear the cart after placing the order
+// return this.clearCart(userId);
+// })
+);
+}
+getUserOrders(userId: number): Observable<any[]> {
+return this.http.get<any[]>(`${this.baseURL}/orders?userId=${userId}`);
+}
+}
+cart.ts(interfaces):
+export interface FoodItem {
+id: number;
+name: string;
+price: number;
+}
+export interface CartItem {
+id: number;
+userId: number;
+foodItemId: number;
+foodItemName: string;
+quantity: number;
+price: number;
+}
+export interface Cart {
+userId: number;
+items: CartItem[];
+}
+FoodService.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+@Injectable({
+providedIn: 'root'
+})
+export class FoodService {
+private apiurl = 'http://localhost:3000/foodItems';
+constructor(private httpclient: HttpClient) { }
+addFoodItem(foodItem: any): Observable<any> {
+return this.httpclient.post(this.apiurl, foodItem);
+}
+getAllFoodItems(): Observable<any> {
+return this.httpclient.get(this.apiurl);
+}
+deleteFoodItem(foodItemId: number): Observable<any> {
+return this.httpclient.delete(`${this.apiurl}/${foodItemId}`);
+}
+searchFoodItems(query: string): Observable<any> {
+return this.httpclient.get(`${this.apiurl}?name_like=${query}`);
+}
+}
+OrderService.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+@Injectable({
+providedIn: 'root'
+})
+export class OrderService {
+private baseURL: string = 'http://localhost:3000';
+constructor(private http: HttpClient) { }
+getOrdersByUserId(userId: number): Observable<any> {
+return this.http.get(`${this.baseURL}/orders?userId=${userId}`);
+}
+}
+PaymentService.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
+@Injectable({
+providedIn: 'root'
+})
+export class PaymentService {
+private baseURL: string = 'http://localhost:3000';
+constructor(private http: HttpClient) { }
+placeOrder(orderDetails: any) {
+return this.http.post(`${this.baseURL}/orders`, orderDetails);
+}
+paymentProcess(paymentDetails: any) {
+// This is just a demo payment gateway.
+console.log('Processing payment with details:', paymentDetails);
+return this.http.post(`${this.baseURL}/payments`, paymentDetails);
+}
+}
+UserService.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+@Injectable({
+providedIn: 'root'
+})
+export class UserService {
+constructor(private httpclient: HttpClient) { }
+private apiurl = "http://localhost:3000/users";
+AddNewUser(user: any): Observable<object> {
+return this.httpclient.post(this.apiurl, user);
+}
+ViewAllUsers(): Observable<any> {
+return this.httpclient.get(this.apiurl);
+}
+DeleteUserById(userId: any): Observable<any> {
+return this.httpclient.delete(`${this.apiurl}/${userId}`)
+}
+getUserByEmail(email: string): Observable<any> {
+return this.httpclient.get(`${this.apiurl}?email=${email}`);
+}
+getUserById(userId: number): Observable<any> {
+return this.httpclient.get<any>(`${this.apiurl}/${userId}`);
+}
+}
+Index.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>KitchenStory</title>
+<base href="/">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<!-- <link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+> -->
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ"
+crossorigin="anonymous">
+<script src="https://kit.fontawesome.com/yourcode.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<app-root></app-root>
+</body>
+</html>
+Styles.css
+/* You can add global styles to this file, and also import other style files */
+.outlet {
+background-image: url("src\assets\images\bgimg.jpg");
+background-size: cover;
+background-attachment: scroll;
+background-position: center;
+background-repeat: no-repeat;
+height: auto;
+}
+body,
+html {
+margin: 0;
+padding: 0;
+font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+font-weight: bold;
+}
+adminHome.component.html:
+<!-- <p>adminhome works!</p> -->
+<div class="container p-5">
+<div class="card-body">
+<h2 class="fw-bolder pb-3">Welcome Admin</h2>
+<p class="fs-5 pb-5">The administrative portal offers a centralized dashboard for
+Food E-commerce
+management. Here, administrators can oversee inventory, add, edit, delete and
+manage all the
+sales data. With intuitive tools and real-time analytics, this portal ensures
+seamless operations,
+optimizing both customer satisfaction and business efficiency.
+</p>
+</div>
+<div class="row">
+<div class="col-md-4">
+<div class="card border-0">
+<div class="card-body text-white rounded-4 p-3" style="background-color:
+rgb(90, 8, 137);">
+<h5 class="card-title">View All Users</h5>
+<hr>
+<p class="card-text">View all the registered user here. To view click
+od the button</p>
+<a routerLink="/viewalluser" class="btn btn-light">View All User</a>
+</div>
+</div>
+</div>
+<div class="col-md-4">
+<div class="card border-0">
+<div class="card-body text-white rounded-4" style="background-color:
+rgb(90, 8, 137);">
+<h5 class="card-title">View All Food Items</h5>
+<hr>
+<p class="card-text">View all the food items user here. To view click
+on the button</p>
+<a routerLink="/viewallfooditems" class="btn btn-light">View Food
+Items</a>
+</div>
+</div>
+</div>
+<div class="col-md-4">
+<div class="card border-0">
+<div class="card-body text-white rounded-4" style="background-color:
+rgb(90, 8, 137);">
+<h5 class="card-title">Add New Food Item</h5>
+<hr>
+<p class="card-text">Add new food item here. To add new item click on
+the button</p>
+<a routerLink="/viewallfooditems" class="btn btn-light">Add Food
+Item</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+Adminhome.ts
+import { Component } from '@angular/core';
+@Component({
+selector: 'app-adminhome',
+templateUrl: './adminhome.component.html',
+styleUrls: ['./adminhome.component.css']
+})
+export class AdminhomeComponent {
+}
+Addfooditem.html
+<!-- <p>addfooditem works!</p> -->
+<br>
+<br>
+<div class="container">
+<div class="card col-md-4 m-auto" style="border-radius: 1rem;">
+<div class="card-body p-4 p-lg-4 text-black">
+<form [formGroup]="foodItemForm" (ngSubmit)="onSubmit()">
+<div class="d-flex align-items-center mb-1 pb-2">
+<h4 class="fw-bold">Add New Food Item</h4>
+</div>
+<h6 class="fw-normal mb-4 pb-2" style="letter-spacing: 1px;"></h6>
+<div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage
+}}</div>
+<div class="form-outline mb-4">
+<label for="name">Name</label>
+<input type="text" id="name" formControlName="name"
+class="form-control">
+</div>
+<div class="form-outline mb-4">
+<label for="price">Price</label>
+<input type="number" id="price" formControlName="price"
+class="form-control">
+</div>
+<div class="">
+<input type="submit" value="Add Food Item" class="btn btn-dark
+text-center" />
+&nbsp;
+<input type="reset" value="Reset" class="btn btn-dark text-center" />
+</div>
+</form>
+</div>
+</div>
+</div>
+Addfooditem.ts
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FoodService } from '../food.service';
+import { Router } from '@angular/router';
+@Component({
+selector: 'app-addfooditem',
+templateUrl: './addfooditem.component.html',
+styleUrls: ['./addfooditem.component.css']
+})
+export class AddfooditemComponent {
+foodItemForm: FormGroup;
+errorMessage: string;
+constructor(
+private formBuilder: FormBuilder,
+private foodService: FoodService,
+private router: Router
+) { }
+ngOnInit(): void {
+this.foodItemForm = this.formBuilder.group({
+name: ['', Validators.required],
+price: ['', Validators.required],
+});
+}
+onSubmit(): void {
+if (this.foodItemForm.valid) {
+const foodItem = this.foodItemForm.value;
+this.foodService.addFoodItem(foodItem).subscribe(response => {
+alert('Food item added successfully!');
+this.foodItemForm.reset(); // Reset the form
+this.router.navigate(["/viewallfooditems"]);
+}, error => {
+this.errorMessage = 'Error while adding food item. Please try again.';
+});
+}
+}
+}
+Cart.hmtl
+<br>
+<div class="col-md-6 m-auto card">
+<div class="card-body">
+<div class="card">
+<div class="text-center text-light pt-2" style="background-color: rgb(6, 83,
+97);">
+<h5>Your Cart</h5>
+</div>
+</div>
+<br>
+<div class="card">
+<div class="card-body">
+<table class="table table-bordered text-center table-sm">
+<thead class="table-secondary">
+<tr class="">
+<th>Item Name</th>
+<th>Quantity</th>
+<th>Price</th>
+<th>Total</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody>
+<tr *ngFor="let item of cartItems" class="">
+<td>{{ item.foodItemName }}</td>
+<td>
+<button class="btn btn-dark btn-sm rounded-start-pill"
+(click)="decreaseQuantity(item)"
+[disabled]="item.quantity <= 1">&nbsp;-</button>
+<button class="btn btn-dark btn-sm rounded-0">{{
+item.quantity }}</button>
+<button class="btn btn-dark btn-sm rounded-end-circle"
+(click)="increaseQuantity(item)">+&nbsp;</button>
+</td>
+<td>&#8377;{{ item.price }}</td>
+<td>{{ item.price * item.quantity }}</td>
+<td>
+<button class="btn btn-dark btn-sm rounded-pill"
+(click)="removeItem(item)">&nbsp;Remove&nbsp;</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<br>
+<div class="card">
+<div class="card-body">
+<h5>Total Amount: &#8377;{{ totalAmount }}</h5>
+<button class="btn btn-dark" (click)="clearAll()">Clear Cart</button>
+</div>
+</div>
+<br>
+<div class="card border-0">
+<button class="btn btn-dark pt-2 pb-2 rounded-5" (click)="placeOrder()">Place
+Order</button>
+</div>
+</div>
+</div>
+Cart.component.ts
+import { Component } from '@angular/core';
+import { CartService } from '../cart.service';
+import { AuthService } from '../auth.service';
+import { Router } from '@angular/router';
+@Component({
+selector: 'app-cart',
+templateUrl: './cart.component.html',
+styleUrls: ['./cart.component.css']
+})
+export class CartComponent {
+cartItems: any[] = [];
+totalAmount: number = 0;
+cartItemCount: number = 0;
+constructor(
+private cartService: CartService,
+private authService: AuthService,
+private router: Router
+) { }
+ngOnInit() {
+this.loadCartItems();
+this.loadCartItemsCount();
+this.cartService.cartItemCount$.subscribe(count => this.cartItemCount = count);
+}
+loadCartItems() {
+const currentUser = this.authService.getCurrentUserId();
+this.cartService.getCartItems(currentUser).subscribe(items => {
+this.cartItems = items;
+this.calculateTotalAmount();
+});
+}
+loadCartItemsCount() {
+const userId = this.authService.getCurrentUserId();
+this.cartService.getCartItems(userId).subscribe(items => {
+this.cartItemCount = items.length;
+});
+}
+calculateTotalAmount() {
+this.totalAmount = this.cartItems.reduce((sum, item) => sum + (item.price *
+item.quantity), 0);
+}
+increaseQuantity(cartItem: any) {
+this.cartService.increaseQuantity(cartItem.id, cartItem.quantity).subscribe(() => {
+cartItem.quantity++; // Update local data
+this.calculateTotalAmount();
+});
+}
+decreaseQuantity(cartItem: any) {
+if (cartItem.quantity > 1) {
+this.cartService.decreaseQuantity(cartItem.id, cartItem.quantity).subscribe(() => {
+cartItem.quantity--; // Update local data
+this.calculateTotalAmount();
+});
+}
+}
+removeItem(item: any) {
+this.cartService.removeCartItem(item.id).subscribe(() => {
+this.loadCartItems(); // Reload items after one is removed
+});
+}
+clearAll() {
+const currentUser = this.authService.getCurrentUserId();
+this.cartService.clearCart(currentUser).subscribe(() => {
+this.cartItems = []; // Clear local cart items
+this.totalAmount = 0; // Reset total amount
+console.log(this.cartItems);
+});
+}
+placeOrder() {
+const userId = this.authService.getCurrentUserId();
+const currentDate = new Date().toISOString();
+const orderDetails = {
+userId: userId,
+cartItems: this.cartItems,
+total: this.totalAmount,
+date: currentDate
+};
+this.cartService.placeOrder(userId).subscribe(response => {
+// Navigate to the payment component
+this.router.navigate(['/payment'], { queryParams: { total: this.totalAmount } });
+// Passing the total amount as a query parameter to the payment component
+});
+}
+}
+Changepassword.html
+<!-- <p>changepassword works!</p> -->
+<br>
+<br>
+<div class="container">
+<div class="card col-md-5 m-auto" style="border-radius: 1rem;">
+<div class="card-body p-4 p-lg-4 text-black">
+<form (submit)="onChangePassword()">
+<div class="d-flex align-items-center mb-1 pb-2">
+<h4 class="fw-bold">Kitchen Story</h4>
+</div>
+<h6 class="fw-normal mb-3 pb-2" style="letter-spacing: 1px;">Change Your
+Password</h6>
+<div class="form-outline mb-4">
+<input type="password" class="form-control" id="currentPassword"
+[(ngModel)]="currentPassword"
+name="currentPassword" placeholder="Current Password">
+<label for="currentPassword">Current Password: </label>
+</div>
+<div class="form-outline mb-4">
+<input type="password" class="form-control" id="newPassword"
+[(ngModel)]="newPassword"
+name="newPassword" placeholder="New Password">
+<label for="newPassword">New Password:</label>
+</div>
+<div class="form-outline mb-4">
+<input type="password" class="form-control" id="confirmNewPassword"
+[(ngModel)]="confirmNewPassword"
+name="confirmNewPassword" placeholder="Confirm Password">
+<label for="newPassword">New Password:</label>
+</div>
+<div class="d-grid gap-2 mb-3">
+<button type="submit" class="btn btn-dark">Change Password</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+ChangepasswordComponent.ts
+import { Component } from '@angular/core';
+import { AuthService } from '../auth.service';
+@Component({
+selector: 'app-changepassword',
+templateUrl: './changepassword.component.html',
+styleUrls: ['./changepassword.component.css']
+})
+export class ChangepasswordComponent {
+currentPassword: string;
+newPassword: string;
+confirmNewPassword: string;
+constructor(private authService: AuthService) { }
+onChangePassword() {
+if (this.newPassword === this.confirmNewPassword) {
+this.authService.changePassword(this.currentPassword, this.newPassword)
+.subscribe((response: { success: any; }) => {
+if (response.success) {
+alert('Password changed successfully!');
+} else {
+alert('Error changing password. Please try again.');
+}
+});
+} else {
+alert('New passwords do not match!');
+}
+}
+}
+Dashboard.hmtl
+<!-- <p>dashboard works!</p> -->
+<div class="container p-4">
+<div class="row">
+<div class="col-md-3 me-5">
+<div class="p-3 text-center rounded-end-pill" style="background-color:
+darkred;">
+<p class="fs-5 pt-2">
+<a class="link-light link-underline-opacity-0"
+(click)="toggleOrdersDisplay()">
+{{ showOrders ? 'Hide Orders' : 'View Orders' }} >
+</a>
+</p>
+</div>
+</div>
+<div class="col-md-6 p-3">
+<div class="card" *ngIf="showOrders">
+<h4 class="p-2 text-center">Your Orders</h4>
+<div *ngFor="let order of orders|paginate:{itemsPerPage:2,currentPage:p};
+let i = index "
+class="mb-4 ps-3 pe-3">
+<div class="card rounded-0">
+<div class="card-header">
+<small class="text-muted">Date: {{ order.date | date:'medium'
+}}</small>
+</div>
+<div class="card-body">
+<h6 class="">Ordered Items:</h6>
+<table class="table table-bordered table-sm">
+<thead>
+<tr>
+<th>No</th>
+<th>Item Name</th>
+<th>Quantity</th>
+<th>Price</th>
+</tr>
+</thead>
+<tbody>
+<tr *ngFor="let item of order.items; let idx =
+index">
+<td>{{ idx + 1 }}</td>
+<td>{{ item.foodItemName }}</td>
+<td>{{ item.quantity }}</td>
+<td>{{ item.price }}</td>
+</tr>
+</tbody>
+</table>
+<strong>Total Amount:</strong> {{ order.totalAmount }}
+</div>
+</div>
+</div>
+<pagination-controls (pageChange)="p = $event" class="my-3 pagination
+page-item"></pagination-controls>
+</div>
+</div>
+</div>
+</div>
+<div class="container p-4">
+<div class="row">
+<div class="col-md-3 me-5">
+<div class="p-3 text-center rounded-end-pill" style="background-color:
+darkgreen;">
+<p class="fs-5 pt-2">
+<a class="link-light link-underline-opacity-0"
+(click)="toggleOrdersDisplay()">
+Coupons/Rewards >
+</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div class="container p-4">
+<div class="row">
+<div class="col-md-3 me-5">
+<div class="p-3 text-center rounded-end-pill" style="background-color:
+darkblue;">
+<p class="fs-5 pt-2">
+<a class="link-light link-underline-opacity-0"
+(click)="toggleOrdersDisplay()">
+Notifications >
+</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div class="container p-4">
+<div class="row">
+<div class="col-md-3 me-5">
+<div class="p-3 text-center rounded-end-pill" style="background-color:
+rgb(65, 3, 112);">
+<p class="fs-5 pt-2">
+<a class="link-light link-underline-opacity-0"
+(click)="toggleOrdersDisplay()">
+Cards & Wallet >
+</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+DashboardComponent.ts
+import { Component } from '@angular/core';
+import { AuthService } from '../auth.service';
+import { OrderService } from '../order.service';
+@Component({
+selector: 'app-dashboard',
+templateUrl: './dashboard.component.html',
+styleUrls: ['./dashboard.component.css']
+})
+export class DashboardComponent {
+userName: string;
+orders: any[] = [];
+showOrders: boolean = false;
+p: number;
+constructor(
+private authService: AuthService,
+private orderService: OrderService
+) { }
+ngOnInit() {
+const userId = this.authService.getCurrentUserId();
+this.authService.getUserDetails(userId).subscribe(user => {
+this.userName = user.username;
+console.log(user);
+});
+this.loadUserOrders(userId);
+}
+loadUserOrders(userId: number) {
+this.orderService.getOrdersByUserId(userId).subscribe(data => {
+this.orders = data;
+});
+}
+toggleOrdersDisplay() {
+this.showOrders = !this.showOrders;
+if (this.showOrders && !this.orders.length) { // Load orders only if not already
+loaded
+const userId = this.authService.getCurrentUserId();
+this.loadUserOrders(userId);
+}
+}
+}
+Fooditems.html:
+<div class="p-3">
+<form class="col-md-6 d-flex m-auto" role="search">
+<input class="form-control me-2" type="search" aria-label="Search"
+name="searchTerm" type="text"
+[(ngModel)]="searchTerm" (keyup)="search()" placeholder="Search food
+items...">
+<button class="btn text-light" type="submit" (click)="search()"
+style="background-color: rgb(6, 83, 97);">
+<i class="fa fa-search"></i>
+</button>
+</form>
+<br>
+<div class="card m-auto pb-3 col-md-6 rounded-4">
+<div class="card-header rounded-4 border-0 text-center text-light pt-3 pb-2"
+style="background-color: rgb(6, 83, 97);">
+<h5>Available Food Items</h5>
+</div>
+<br>
+<div class="card-body">
+<table class="table table-bordered table-striped table-hover text-center
+text-capitalize">
+<tbody>
+<tr *ngFor="let foodItem of foodItems |
+paginate:{itemsPerPage:5,currentPage:p}">
+<!-- <tr *ngFor="let foodItem of foodItems"> -->
+<td>{{foodItem.name}}</td>
+<td class="p-auto">&#8377;{{foodItem.price}}</td>
+<td>
+<button class="btn btn-dark btn-sm rounded-pill"
+(click)="addToCart(foodItem)">
+Add to Cart
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+<pagination-controls (pageChange)="p = $event"></pagination-controls>
+</div>
+</div>
+<br>
+<div class="col-md-6 m-auto">
+<div class=" d-grid gap-3 mb-3">
+<button *ngIf="authService.isAuthenticated()" class="btn btn-dark pt-3 pb-3
+rounded-5" routerLink="/cart">
+View Cart
+</button>
+</div>
+</div>
+</div>
+FooditemsComponent.ts
+import { Component } from '@angular/core';
+import { AuthService } from '../auth.service';
+import { FoodService } from '../food.service';
+import { CartService } from '../cart.service';
+import { Router } from '@angular/router';
+@Component({
+selector: 'app-fooditems',
+templateUrl: './fooditems.component.html',
+styleUrls: ['./fooditems.component.css']
+})
+export class FooditemsComponent {
+foodItems: any[] = [];
+p: string | number | undefined;
+filteredFoodItems: any[] = [];
+searchTerm: string = '';
+constructor(
+public authService: AuthService,
+private foodService: FoodService,
+private cartService: CartService,
+private router: Router
+) { }
+ngOnInit(): void {
+this.foodService.getAllFoodItems().subscribe(data => {
+this.foodItems = data;
+this.filteredFoodItems = data;
+});
+}
+addToCart(foodItem: any) {
+const userId = this.authService.getCurrentUserId();
+if (!userId) {
+alert("Login First!");
+this.router.navigate(["/login"]);
+}
+this.cartService.addToCart(userId, foodItem).subscribe(response => {
+console.log('Added to cart:', response);
+alert(`${foodItem.name} added to cart`);
+});
+}
+search(): void {
+if (this.searchTerm) {
+this.filteredFoodItems = this.foodItems.filter(item =>
+item.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+);
+} else {
+this.filteredFoodItems = this.foodItems;
+}
+}
+}
+Footer.html
+<!-- <p>footer works!</p> -->
+<br>
+<section class="">
+<!-- Footer -->
+<footer class="bg-danger">
+<!-- Grid container -->
+<div class="container p-4">
+<!--Grid row-->
+<div class="row text-light">
+<!--Grid column-->
+<div class="col-lg-6 col-md-12 mb-4 mb-md-0 ps-5">
+<h5 class="text-uppercase">Kitchen Story</h5>
+<p>
+Lorem ipsum dolor sit amet consectetur, adipisicing elit. Iste
+atque ea quis
+molestias. Fugiat pariatur maxime quis culpa corporis aliquam
+voluptatem veniam, est atque
+cumque eum delectus sint!
+</p>
+</div>
+<!--Grid column-->
+<!--Grid column-->
+<div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+<!-- <h5 class="text-uppercase">Links</h5> -->
+<ul class="list-unstyled">
+<li>
+<i class="fab fa-google mb-3" style="font-size: 25px;"></i>
+<a href="#!" class="text-white"></a>
+</li>
+<li>
+<i class="fab fa-facebook mb-3" style="font-size: 25px;"></i>
+<a href="#!" class="text-white"></a>
+</li>
+<li>
+<i class="fab fa-instagram mb-3" style="font-size:
+25px;"></i>
+<a href="#!" class="text-white"></a>
+</li>
+</ul>
+</div>
+<!--Grid column-->
+<!--Grid column-->
+<div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+<!-- <h5 class="text-uppercase mb-0">Links</h5> -->
+<ul class="list-unstyled">
+<li>
+<i class="fab fa-google-plus-g mb-3" style="font-size:
+25px;"></i>
+<a href="#!" class="text-white"></a>
+</li>
+<li>
+<i class="fab fa-twitter mb-3" style="font-size: 25px;"></i>
+<a href="#!" class="text-white"></a>
+</li>
+<li>
+<i class="fab fa-linkedin-square mb-3" style="font-size:
+25px;"></i>
+<a href="#!" class="text-white"></a>
+</li>
+</ul>
+</div>
+<!--Grid column-->
+</div>
+<!--Grid row-->
+</div>
+<!-- Grid container -->
+<!-- Copyright -->
+<div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+© Copyright:
+<a class="">KitchenStory</a>
+</div>
+<!-- Copyright -->
+</footer>
+<!-- Footer -->
+</section>
+FooterComponent.ts
+import { Component } from '@angular/core';
+@Component({
+selector: 'app-footer',
+templateUrl: './footer.component.html',
+styleUrls: ['./footer.component.css']
+})
+export class FooterComponent {
+}
+Home.html
+<br>
+<div class="p-3">
+<h3 class="text-white text-center">Welcome Home to Tasteful Delights! </h3>
+<br>
+<div class="">
+<div class="row m-auto " style="justify-content: center;">
+<div class="col-md-4">
+<div class="card" id="card1">
+<div class=" text-white">
+<p class="card-text">Fresh Flavors Delivered! </p>
+<p class="card-text">Dive into a world of culinary delights right
+at your doorstep. Order
+now
+for a taste adventure.</p>
+<a routerLink="/menu" class="btn btn-light">Go To Menu</a>
+</div>
+</div>
+</div>
+<div class="col-md-4">
+<div class="card" id="card2">
+<div class=" text-white">
+<p class="card-text">Craving Comfort?</p>
+<p class="card-text"> From local favorites to gourmet dishes, we
+bring the world's kitchen
+to
+your home. Satisfy your appetite today.</p>
+<a routerLink="/menu" class="btn btn-light">Go To Menu</a>
+</div>
+</div>
+</div>
+</div>
+<br>
+<br>
+<div class="col-md-11 text-white m-auto">
+<div class="">
+<p class="fs-5">Satisfy Your Culinary Desires with a Click! <br>
+Dive into our vast selection of
+mouth-watering dishes,
+sourced from the best local restaurants and gourmet kitchens. Whether
+you're craving home-cooked
+comfort or an exotic flavor adventure, we've got you covered.
+Experience hassle-free ordering,
+timely delivery, and food that warms your soul. Join our foodie
+community today and relish the world
+on a plate. Your next delicious meal is just a few taps away.</p>
+</div>
+</div>
+</div>
+<br>
+<br>
+</div>
+HomeComponent.ts
+import { Component } from '@angular/core';
+@Component({
+selector: 'app-home',
+templateUrl: './home.component.html',
+styleUrls: ['./home.component.css']
+})
+export class HomeComponent {
+}
+Login.html
+<br>
+<div class="container">
+<div class="card col-md-4 m-auto" style="border-radius: 1rem;">
+<div class="card-body p-4 p-lg-4 text-black">
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+<div class="d-flex align-items-center mb-1 pb-2">
+<h4 class="fw-bold">Kitchen Story</h4>
+</div>
+<h6 class="fw-normal mb-3 pb-2" style="letter-spacing: 1px;">Sign into
+your account
+</h6>
+<div class="form-outline mb-4">
+<input type="email" id="email" formControlName="email"
+class="form-control">
+<label for="email">Email</label>
+</div>
+<div class="form-outline mb-4">
+<input type="password" id="password" formControlName="password"
+class="form-control">
+<label for="password">Password</label>
+</div>
+<div class="d-grid gap-2 mb-3">
+<button class="btn btn-dark btn-block" type="submit">Login</button>
+</div>
+<p class="mb-3 pb-lg-2" style="color: #393f81;">Don't have an account?
+<a routerLink="/register" style="color: #393f81;">Register here</a>
+</p>
+<div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage
+}}</div>
+</form>
+</div>
+</div>
+</div>
+LoginComponent.ts
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { UserService } from '../user.service';
+import { AuthService } from '../auth.service';
+import { Router } from '@angular/router';
+@Component({
+selector: 'app-login',
+templateUrl: './login.component.html',
+styleUrls: ['./login.component.css']
+})
+export class LoginComponent {
+loginForm: FormGroup;
+errorMessage: string;
+constructor(
+private formBuilder: FormBuilder,
+private userService: UserService,
+private authService: AuthService,
+private router: Router
+) { }
+ngOnInit(): void {
+this.loginForm = this.formBuilder.group({
+email: ['', [Validators.required, Validators.email]],
+password: ['', Validators.required]
+});
+}
+onSubmit(): void {
+if (this.loginForm.valid) {
+const email = this.loginForm.get('email')!.value;
+const password = this.loginForm.get('password')!.value;
+this.userService.getUserByEmail(email).subscribe(user => {
+if (user && user[0] && user[0].password === password) {
+this.authService.login(user[0]);
+if (this.authService.getRole() === 'admin') {
+this.router.navigate(['/admin']); // Navigate to the AdminComponent
+} else {
+this.router.navigate(['/']);
+}
+} else {
+this.errorMessage = 'Invalid email or password';
+}
+}, error => {
+this.errorMessage = 'An error occurred';
+});
+}
+}
+}
+Payment.component.html
+<br>
+<div class="container p-3" style="justify-content: center;">
+<div class="row p-3">
+<div class="col-md-6">
+<div class="card p-5">
+<form [formGroup]="addressForm">
+Name:
+<input class="form-control" type="text" formControlName="fullName">
+Street Address:
+<input class="form-control" type="text"
+formControlName="streetAddress">
+City:
+<input class="form-control" type="text" formControlName="city">
+State:
+<input class="form-control" type="text" formControlName="state">
+Postal Code:
+<input class="form-control" type="text" formControlName="postalCode">
+Country:
+<input class="form-control" type="text" formControlName="country">
+</form>
+</div>
+</div>
+<div class="col-md-6">
+<div class="card p-5">
+<h3>Payment Gateway</h3>
+<p>Please confirm your payment</p>
+<p>Total Amount to Pay : {{ totalAmount }}</p>
+<button class="btn btn-dark" (click)="confirmPayment()">Confirm
+Payment</button>
+</div>
+</div>
+</div>
+</div>
+PaymentComponent.ts
+import { Component } from '@angular/core';
+import { CartService } from '../cart.service';
+import { PaymentService } from '../payment.service';
+import { AuthService } from '../auth.service';
+import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+@Component({
+selector: 'app-payment',
+templateUrl: './payment.component.html',
+styleUrls: ['./payment.component.css']
+})
+export class PaymentComponent {
+totalAmount: number = 0;
+cartItems: never[];
+addressForm: FormGroup;
+constructor(
+private cartService: CartService,
+private paymentService: PaymentService,
+private authService: AuthService,
+private router: Router,
+private route: ActivatedRoute,
+private fb: FormBuilder
+) {
+this.addressForm = this.fb.group({
+fullName: ['', Validators.required],
+streetAddress: ['', Validators.required],
+city: ['', Validators.required],
+state: ['', Validators.required],
+postalCode: ['', Validators.required],
+country: ['', Validators.required]
+});
+}
+ngOnInit() {
+// Get the total amount from query parameters
+this.totalAmount = +this.route.snapshot.queryParamMap.get('total')!;
+}
+confirmPayment() {
+const userId = this.authService.getCurrentUserId();
+if (this.addressForm.valid) {
+const paymentDetails = {
+userId: userId,
+amount: this.totalAmount,
+address: this.addressForm.value
+};
+this.paymentService.paymentProcess(paymentDetails).subscribe(response => {
+if (response) {
+alert('Payment successful!');
+console.log(response);
+this.router.navigate(["/menu"]);
+// Clear the cart
+this.cartService.clearCart(userId).subscribe(() => {
+// alert('Cart cleared after successful payment.');
+});
+} else {
+alert('Payment failed. Please try again.');
+}
+});
+} else {
+alert('Please fill in all address details.');
+}
+}
+}
+Register.hmtl
+<!-- <p>register works!</p> -->
+<br>
+<div class="container">
+<div class="card col-md-4 m-auto" style="border-radius: 1rem;">
+<div class="card-body p-4 p-lg-4 text-black">
+<form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+<div class="d-flex align-items-center mb-1 pb-2">
+<h4 class="fw-bold">Welcome to Kitchen Story</h4>
+</div>
+<h6 class="fw-normal mb-4 pb-2" style="letter-spacing: 1px;">Create your
+account to here
+</h6>
+<div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage
+}}</div>
+<div class="form-outline mb-4">
+<input type="text" id="username" formControlName="username"
+class="form-control">
+<label for="email">Full Name</label>
+</div>
+<div class="form-outline mb-4">
+<input type="email" id="email" formControlName="email"
+class="form-control">
+<label for="email">Email</label>
+</div>
+<div class="form-outline mb-4">
+<input type="password" id="password" formControlName="password"
+class="form-control">
+<label for="password">Password</label>
+</div>
+<div class="form-outline mb-4">
+<input type="password" id="confirmPassword"
+formControlName="confirmPassword" class="form-control">
+<label for="confirmPassword">Confirm Password</label>
+</div>
+<div *ngIf="registerForm.errors?.['mismatch']" class="alert
+alert-danger">
+Passwords don't match!
+</div>
+<div class="d-grid gap-2 mb-3">
+<button class="btn btn-dark btn-block"
+type="submit">Register</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+RegisterComponent.ts
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { UserService } from '../user.service';
+@Component({
+selector: 'app-register',
+templateUrl: './register.component.html',
+styleUrls: ['./register.component.css']
+})
+export class RegisterComponent {
+registerForm: FormGroup;
+errorMessage: string;
+constructor(
+private formBuilder: FormBuilder,
+private userService: UserService,
+private router: Router
+) { }
+ngOnInit(): void {
+this.registerForm = this.formBuilder.group({
+username: ['', Validators.required],
+email: ['', [Validators.required, Validators.email]],
+password: ['', Validators.required],
+confirmPassword: ['', Validators.required]
+}, {
+validator: this.passwordMatchValidator
+});
+}
+passwordMatchValidator(formGroup: FormGroup) {
+return formGroup.get('password')!.value === formGroup.get('confirmPassword')!.value
+? null : { 'mismatch': true };
+}
+onSubmit(): void {
+if (this.registerForm.valid) {
+const user = {
+username: this.registerForm.get('username')?.value,
+email: this.registerForm.get('email')!.value,
+password: this.registerForm.get('password')!.value
+};
+this.userService.AddNewUser(user).subscribe(response => {
+// Handle response, navigate to login or dashboard
+this.router.navigate(['/login']);
+}, error => {
+console.error("There was an error during the registration process", error);
+this.errorMessage = "Registration failed. Please try again later.";
+});
+}
+}
+}
+View-all-users.html
+<!-- <p>view-all-users works!</p> -->
+<br>
+<div class="">
+<div class="col-md-10 m-auto">
+<div class="card">
+<div class="text-center text-light pt-3 pb-2" style="background-color: rgb(6,
+83, 97);">
+<h5>All Registered Users Details</h5>
+</div>
+<div class="card-body">
+<table class="table table-bordered table-stripped text-center table-sm">
+<thead class="table-secondary">
+<tr>
+<th>User Id</th>
+<th>User Name</th>
+<th>User Email</th>
+<th>Operations</th>
+</tr>
+</thead>
+<tbody>
+<tr *ngFor="let user of users">
+<td>{{user.id}}</td>
+<td>{{user.username}}</td>
+<td>{{user.email}}</td>
+<td>
+<button class="btn btn-primary rounded-pill"
+[routerLink]="['/view', user.id]"
+style="--bs-btn-padding-y: .12rem;
+--bs-btn-padding-x: .3rem; --bs-btn-font-size: .80rem;">View</button>
+&nbsp;
+<input type="button" value="Delete" class="btn btn-danger
+rounded-pill"
+style="--bs-btn-padding-y: .12rem;
+--bs-btn-padding-x: .3rem; --bs-btn-font-size: .80rem;"
+(click)="deleteUser(user)">
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+ViewAllUsersComponent.ts
+import { Component } from '@angular/core';
+import { UserService } from '../user.service';
+@Component({
+selector: 'app-view-all-users',
+templateUrl: './view-all-users.component.html',
+styleUrls: ['./view-all-users.component.css']
+})
+export class ViewAllUsersComponent {
+users: any[] = [];
+authService: any;
+cartService: any;
+constructor(
+private userService: UserService
+) { }
+ngOnInit(): void {
+this.userService.ViewAllUsers().subscribe(data => {
+this.users = data;
+});
+}
+deleteUser(user: any): void {
+if (confirm(`Are you sure you want to delete user: ${user.username}?`)) {
+this.userService.DeleteUserById(user.id).subscribe(() => {
+this.users = this.users.filter(u => u !== user);
+});
+}
+}
+viewOrder(userId: any) {
+const currentUser = this.authService.getCurrentUserId(userId);
+}
+}
+Viewallfooditems.html
+<!-- <p>viewallfooditems works!</p> -->
+<br>
+<div class="row">
+<div class="col-md-6 m-auto">
+<div class="card">
+<div class="text-center text-light pt-3 pb-2" style="background-color: rgb(6,
+83, 97);">
+<h5>All Food Items Detail</h5>
+</div>
+<div class="card-body">
+<button class="btn btn-sm btn-dark" routerLink="/addfood">Add New Food
+Item</button>
+<br>
+<br>
+<table class="table table-bordered table-stripped text-center table-sm">
+<thead class="table-secondary">
+<tr>
+<th>Id</th>
+<th>Name</th>
+<th>Price</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr *ngFor="let foodItem of foodItems">
+<td>{{foodItem.id}}</td>
+<td>{{foodItem.name}}</td>
+<td>&#8377;{{foodItem.price}}</td>
+<td>
+<input type="button" value="Edit" class="btn btn-info"
+style="--bs-btn-padding-y: .12rem;
+--bs-btn-padding-x: .3rem; --bs-btn-font-size: .80rem;">
+&nbsp;
+<input type="button" value="Delete" class="btn
+btn-danger"
+style="--bs-btn-padding-y: .12rem;
+--bs-btn-padding-x: .3rem; --bs-btn-font-size: .80rem;"
+(click)="deleteFoodItem(foodItem)">
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+ViewallfooditemsComponent.ts
+import { Component } from '@angular/core';
+import { FoodService } from '../food.service';
+@Component({
+selector: 'app-viewallfooditems',
+templateUrl: './viewallfooditems.component.html',
+styleUrls: ['./viewallfooditems.component.css']
+})
+export class ViewallfooditemsComponent {
+foodItems: any[] = [];
+constructor(private foodService: FoodService) { }
+ngOnInit(): void {
+this.foodService.getAllFoodItems().subscribe(data => {
+this.foodItems = data;
+});
+}
+deleteFoodItem(foodItem: any): void {
+if (confirm(`Are you sure you want to delete food item: ${foodItem.name}?`)) {
+this.foodService.deleteFoodItem(foodItem.id).subscribe(() => {
+this.foodItems = this.foodItems.filter(f => f !== foodItem); // Remove the food
+item from the local array
+});
+}
+}
+}
+Vieworder.html
+<!-- <p>vieworder works!</p> -->
+<div class="container col-md-7">
+<h4 class="">Orders for User ID: {{ userId }}</h4>
+<div *ngFor="let order of orders|paginate:{itemsPerPage:2,currentPage:p}; let i =
+index " class="mb-4">
+<div class="card rounded-0">
+<div class="card-header">
+<h5>Order ID: {{ order.id }}</h5>
+<small class="text-muted">Date: {{ order.date | date:'medium' }}</small>
+</div>
+<div class="card-body">
+<h6 class="">Ordered Items:</h6>
+<table class="table table-bordered table-sm">
+<thead>
+<tr>
+<th>No</th>
+<th>Item Name</th>
+<th>Quantity</th>
+<th>Price</th>
+</tr>
+</thead>
+<tbody>
+<tr *ngFor="let item of order.items; let idx = index">
+<td>{{ idx + 1 }}</td>
+<td>{{ item.foodItemName }}</td>
+<td>{{ item.quantity }}</td>
+<td>{{ item.price }}</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="card-footer">
+<strong>Total Amount:</strong> {{ order.totalAmount }}
+</div>
+</div>
+</div>
+<!-- <pagination-controls (pageChange)="p = $event"
+class="pagination"></pagination-controls> -->
+<div class="d-flex justify-content-center mt-3">
+<pagination-controls (pageChange)="p = $event" class="my-3 pagination
+page-item"></pagination-controls>
+</div>
+</div>
+VieworderComponent.ts
+import { Component } from '@angular/core';
+import { OrderService } from '../order.service';
+import { ActivatedRoute } from '@angular/router';
+@Component({
+selector: 'app-vieworder',
+templateUrl: './vieworder.component.html',
+styleUrls: ['./vieworder.component.css']
+})
+export class VieworderComponent {
+userId: number;
+orders: any[] = [];
+p: string | number | undefined;
+constructor(private route: ActivatedRoute, private orderService: OrderService) { }
+ngOnInit() {
+this.userId = +this.route.snapshot.paramMap.get('userId')!; // + is to convert string
+to number
+this.loadUserOrders(this.userId);
+}
+loadUserOrders(userId: number) {
+this.orderService.getOrdersByUserId(userId).subscribe(data => {
+this.orders = data;
+console.log(data)
+});
+}
+}
